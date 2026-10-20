@@ -25,9 +25,12 @@ Paths are resolved and rejected when they fall outside the root.
 ## Docker Compose
 
 Example suitable for Dockge. Point the volume at the directory you want to
-clean, and set `user` to an account that can write that directory (deleting a
-file updates its parent directory). `user:` overrides the image's default
-uid/gid of 1000.
+clean. `user` is `UID:GID`: the user id before the colon and the group id
+after. Set both to the owner of the files in that directory, not only the
+first number. On the host, `id -u` and `id -g` print your ids, or
+`stat -c '%u:%g' /path/on/host` prints the owner of the mount. Deleting a
+file needs write permission on the directory that contains it. This overrides
+the image's default uid/gid of 1000.
 
 ```yaml
 services:
@@ -38,6 +41,10 @@ services:
       - "8080:8080"
     volumes:
       - /path/on/host:/data
+    # UID:GID. User id before the colon, group id after. Set both to the
+    # owner of the mounted files (`id -u` / `id -g`, or
+    # `stat -c '%u:%g' /path/on/host`). Deleting a file needs write
+    # permission on the directory that contains it.
     user: "1000:1000"
 ```
 
