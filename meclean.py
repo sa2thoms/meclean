@@ -338,8 +338,10 @@ def make_handler(root: Path, token: str, *, quiet: bool = False):
                 self._redirect("rejected")
                 return
             form = parse_qs(self.rfile.read(length).decode("utf-8", "replace"), keep_blank_values=True)
+            got_token = (form.get("token") or [""])[0]
+            rel = (form.get("path") or [""])[0]
             allowed = request_allowed(
-                (form.get("token") or [""])[0],
+                got_token,
                 token,
                 self.headers.get("Host", ""),
                 self.headers.get("Origin", ""),
@@ -349,7 +351,7 @@ def make_handler(root: Path, token: str, *, quiet: bool = False):
                 self._redirect("rejected")
                 return
             try:
-                delete_file(root, (form.get("path") or [""])[0])
+                delete_file(root, rel)
             except UnsafePath:
                 self._redirect("rejected")
                 return
@@ -368,7 +370,9 @@ def make_handler(root: Path, token: str, *, quiet: bool = False):
             self.send_header("Cache-Control", "no-store")
             self.send_header("X-Content-Type-Options", "nosniff")
             self.send_header("X-Frame-Options", "DENY")
-            self.send_header("Referrer-Policy", "no-referrer")
+            # same-origin, not no-referrer: no-referrer makes browsers send
+            # "Origin: null", which would fail the origin check on every delete.
+            self.send_header("Referrer-Policy", "same-origin")
             self.send_header(
                 "Content-Security-Policy",
                 "default-src 'none'; style-src 'unsafe-inline'; "

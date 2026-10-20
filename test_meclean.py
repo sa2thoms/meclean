@@ -148,7 +148,10 @@ class ServerTests(unittest.TestCase):
         conn.request("GET", "/health")
         self.assertEqual(conn.getresponse().read(), b"ok\n")
         conn.request("GET", "/")
-        page = conn.getresponse().read().decode()
+        page_response = conn.getresponse()
+        # no-referrer would make browsers send "Origin: null" and fail the check.
+        self.assertEqual(page_response.getheader("Referrer-Policy"), "same-origin")
+        page = page_response.read().decode()
         conn.close()
         self.assertIn("note.txt", page)
         self.assertIn(self.token, page)
