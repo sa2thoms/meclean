@@ -1,0 +1,12 @@
+# Dockge-friendly example. Change the host path and the user id/gid so the
+# process can delete files in the mounted directory.
+
+services:
+  meclean:
+    image: ghcr.io/sa2thoms/meclean:latest
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - /path/on/host:/data
+    user: "1000:1000"
