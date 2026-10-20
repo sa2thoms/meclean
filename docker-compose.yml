@@ -1,0 +1,16 @@
+# Dockge-friendly example. Change the host path and the user line below.
+
+services:
+  meclean:
+    image: ghcr.io/sa2thoms/meclean:latest
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - /path/on/host:/data
+    # UID:GID. The number before the colon is the user id; the number after
+    # is the group id. Set both to the owner of the files in the mounted
+    # directory (not just the first number). On the host: `id -u` and `id -g`,
+    # or `stat -c '%u:%g' /path/on/host`. Deleting a file needs write
+    # permission on the directory that contains it.
+    user: "1000:1000"
